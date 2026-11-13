@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — SPSU Library</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">📚</span>
+      <h2>SPSU Library</h2>
+      <p>Admin / Librarian Portal</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main Menu</div>
+      <button class="nav-link active" data-page="page-dashboard" onclick="navigateTo('page-dashboard')">
+        <span class="icon">🏠</span> Dashboard
+      </button>
+      <button class="nav-link" data-page="page-books" onclick="navigateTo('page-books')">
+        <span class="icon">📖</span> Books
+      </button>
+      <button class="nav-link" data-page="page-students" onclick="navigateTo('page-students')">
+        <span class="icon">👨‍🎓</span> Students
+      </button>
+
+      <div class="nav-section-title">Circulation</div>
+      <button class="nav-link" data-page="page-issue" onclick="navigateTo('page-issue')">
+        <span class="icon">📤</span> Issue Book
+      </button>
+      <button class="nav-link" data-page="page-return" onclick="navigateTo('page-return')">
+        <span class="icon">📥</span> Return Book
+      </button>
+      <button class="nav-link" data-page="page-overdue" onclick="navigateTo('page-overdue')">
+        <span class="icon">⚠️</span> Overdue Books
+      </button>
+      <button class="nav-link" data-page="page-search" onclick="navigateTo('page-search')">
+        <span class="icon">🔍</span> Book Search
+      </button>
+
+      <div class="nav-section-title">Administration</div>
+      <button class="nav-link" data-page="page-reports" onclick="navigateTo('page-reports')">
+        <span class="icon">📊</span> Reports
+      </button>
+      <button class="nav-link" data-page="page-settings" onclick="navigateTo('page-settings')">
+        <span class="icon">⚙️</span> Settings
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">👤</div>
+        <div class="user-info">
+          <div class="name" id="sidebarUserName">Librarian</div>
+          <div class="role">Administrator</div>
+        </div>
+      </div>
+      <a href="/pages/student-dashboard.html" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px;font-size:12px;color:white;border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.08)">
+        👨‍🎓 Switch to Student Portal
+      </a>
+      <button class="logout-btn" onclick="handleLogout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="page-title" id="pageTitle">Dashboard</div>
+          <div class="page-breadcrumb">SPSU — Library Management System</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:12px;color:#64748B;" id="topbarDate"></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══════════════════════════════════════
+           PAGE: DASHBOARD
+      ══════════════════════════════════════ -->
+      <section class="page active" id="page-dashboard">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-icon navy">📚</div><div class="stat-info"><div class="label">Total Books</div><div class="value" id="stat-books">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon green">👨‍🎓</div><div class="stat-info"><div class="label">Total Students</div><div class="value" id="stat-students">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon navy">✅</div><div class="stat-info"><div class="label">Available Copies</div><div class="value" id="stat-available">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange">📤</div><div class="stat-info"><div class="label">Books Issued</div><div class="value" id="stat-issued">—</div></div></div>
+          <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info"><div class="label">Overdue Books</div><div class="value" id="stat-overdue">—</div></div></div>
+        </div>
+
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Activity</span>
+              <button class="btn btn-outline btn-sm" onclick="loadDashboard()">↻ Refresh</button>
+            </div>
+            <div class="card-body">
+              <ul class="activity-list" id="activityFeed">
+                <li class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">Loading…</div></div></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title">Most Issued Books (Last 30 Days)</span></div>
+            <div class="card-body">
+              <div id="topBooksList">
+                <div class="empty-table"><div class="empty-icon">📊</div>Loading…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:0">
+          <div class="card-full">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <span class="card-title">Quick Actions</span>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-lg" onclick="navigateTo('page-issue')">📤 Issue a Book</button>
+              <button class="btn btn-success btn-lg" onclick="navigateTo('page-return')">📥 Return a Book</button>
+              <button class="btn btn-outline btn-lg" onclick="navigateTo('page-books'); openAddBookModal();">➕ Add Book</button>
+              <button class="btn btn-outline btn-lg" onclick="navigateTo('page-students'); openAddStudentModal();">👨‍🎓 Add Student</button>
+              <button class="btn btn-warning btn-lg" onclick="navigateTo('page-overdue')">⚠️ View Overdue</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: BOOKS
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-books">
+        <div class="toolbar">
+          <div class="search-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="bookSearch" placeholder="Search by title, author, ISBN…" oninput="debounceBookSearch()" />
+            </div>
+            <select class="filter-select" id="bookCatFilter" onchange="loadBooks()">
+              <option value="">All Categories</option>
+            </select>
+            <select class="filter-select" id="bookAvailFilter" onchange="loadBooks()">
+              <option value="">All Books</option>
+              <option value="true">Available Only</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="openAddBookModal()">➕ Add Book</button>
+            <button class="btn btn-outline" onclick="openCategoryModal()">🏷 Categories</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ISBN</th>
+                    <th>Title & Author</th>
+                    <th>Category</th>
+                    <th>Availability</th>
+                    <th>Shelf</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="booksTableBody">
+                  <tr><td colspan="6" class="empty-table"><div class="empty-icon">⏳</div>Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: STUDENTS
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-students">
+        <div class="toolbar">
+          <div class="search-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="studentSearch" placeholder="Search by name, roll number, email…" oninput="debounceStudentSearch()" />
+            </div>
+            <select class="filter-select" id="deptFilter" onchange="loadStudents()">
+              <option value="">All Departments</option>
+            </select>
+            <select class="filter-select" id="statusFilter" onchange="loadStudents()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="openAddStudentModal()">➕ Register Student</button>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Roll No.</th>
+                    <th>Full Name</th>
+                    <th>Department</th>
+                    <th>Sem</th>
+                    <th>Contact</th>
+                    <th>Active Loans</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                  <tr><td colspan="8" class="empty-table"><div class="empty-icon">⏳</div>Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: ISSUE BOOK
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-issue">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Issue a Book to Student</span></div>
+            <div class="card-body">
+              <form id="issueForm" onsubmit="submitIssue(event)">
+                <div class="form-group">
+                  <label>Select Student <span class="req">*</span></label>
+                  <div style="position:relative">
+                    <input type="text" id="issueStudentSearch" placeholder="Search by name or roll number…" oninput="searchStudentsForIssue()" autocomplete="off">
+                    <div id="issueStudentDropdown" style="position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #CBD5E1;border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.1)"></div>
+                  </div>
+                  <input type="hidden" id="issueStudentId">
+                  <div id="selectedStudentInfo" style="margin-top:8px;display:none;padding:10px;background:#EFF6FF;border-radius:8px;font-size:13px;color:#133E87"></div>
+                </div>
+
+                <div class="form-group">
+                  <label>Select Book <span class="req">*</span></label>
+                  <div style="position:relative">
+                    <input type="text" id="issueBookSearch" placeholder="Search by title, author, or ISBN…" oninput="searchBooksForIssue()" autocomplete="off">
+                    <div id="issueBookDropdown" style="position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #CBD5E1;border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.1)"></div>
+                  </div>
+                  <input type="hidden" id="issueBookId">
+                  <div id="selectedBookInfo" style="margin-top:8px;display:none;padding:10px;background:#EFF6FF;border-radius:8px;font-size:13px;color:#133E87"></div>
+                </div>
+
+                <div class="form-group">
+                  <label>Issue Date</label>
+                  <input type="text" id="issueDateDisplay" value="" readonly style="background:#F8FAFC;cursor:default">
+                </div>
+                <div class="form-group">
+                  <label>Due Date (14 days)</label>
+                  <input type="text" id="issueDueDateDisplay" value="" readonly style="background:#F8FAFC;cursor:default">
+                </div>
+                <div class="form-group">
+                  <label>Remarks</label>
+                  <textarea id="issueRemarks" placeholder="Optional notes…" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%" id="issueSubmitBtn">📤 Issue Book</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Issues</span>
+              <button class="btn btn-outline btn-sm" onclick="loadRecentIssues()">↻</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Book</th><th>Student</th><th>Due Date</th><th>Status</th></tr></thead>
+                  <tbody id="recentIssuesBody">
+                    <tr><td colspan="4" class="empty-table">Loading…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: RETURN BOOK
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-return">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Process Book Return</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Search Issued Books</label>
+                <div style="position:relative">
+                  <input type="text" id="returnSearch" placeholder="Search by student name, roll no, or book title…" oninput="searchForReturn()">
+                  <div id="returnDropdown" style="position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #CBD5E1;border-radius:8px;max-height:250px;overflow-y:auto;z-index:100;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.1)"></div>
+                </div>
+              </div>
+              <div id="returnSelectedInfo" style="display:none">
+                <div style="padding:16px;background:#F0FDF4;border:1px solid #A7F3D0;border-radius:10px;margin-bottom:16px">
+                  <div style="font-weight:700;color:#065F46;margin-bottom:8px">📋 Issue Details</div>
+                  <div id="returnDetailsContent"></div>
+                </div>
+                <div class="form-group">
+                  <label>Return Remarks</label>
+                  <textarea id="returnRemarks" placeholder="Optional remarks (e.g. condition of book)…" rows="2"></textarea>
+                </div>
+                <button class="btn btn-success btn-lg" style="width:100%" onclick="submitReturn()" id="returnBtn">📥 Confirm Return</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Currently Issued Books</span>
+              <button class="btn btn-outline btn-sm" onclick="loadIssuedForReturn()">↻</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Book</th><th>Student</th><th>Due Date</th><th>Fine</th><th>Action</th></tr></thead>
+                  <tbody id="issuedReturnBody">
+                    <tr><td colspan="5" class="empty-table">Loading…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: OVERDUE BOOKS
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-overdue">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <span style="font-size:14px;color:#64748B">Books not returned past their due date — ₹5 fine per day</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline" onclick="loadOverdue()">↻ Refresh</button>
+            <button class="btn btn-outline" onclick="printOverdueReport()">🖨 Print</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table id="overdueTable">
+                <thead>
+                  <tr>
+                    <th>Book Title</th>
+                    <th>Student</th>
+                    <th>Department</th>
+                    <th>Contact</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Days Overdue</th>
+                    <th>Fine (₹)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="overdueBody">
+                  <tr><td colspan="9" class="empty-table">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: BOOK SEARCH / AVAILABILITY
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-search">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-full">
+            <div style="max-width:600px;margin:0 auto;text-align:center;padding:20px 0">
+              <div style="font-size:40px;margin-bottom:12px">🔍</div>
+              <h2 style="color:#0B2545;margin-bottom:8px">Book Availability Search</h2>
+              <p style="color:#64748B;margin-bottom:24px">Find out if a book is available in the SPSU Library</p>
+              <div style="display:flex;gap:10px">
+                <div class="search-input-wrap" style="flex:1">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" id="availSearch" placeholder="Enter book title, author, or ISBN…" onkeydown="if(event.key==='Enter')searchAvailability()" style="padding-left:40px">
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="searchAvailability()">Search</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="availResults" style="display:none">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Search Results</span><span id="availResultCount" style="font-size:13px;color:#64748B"></span></div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>ISBN</th><th>Title</th><th>Author</th><th>Category</th><th>Shelf</th><th>Availability</th></tr></thead>
+                  <tbody id="availResultsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: REPORTS
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-reports">
+        <div id="reportButtons" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+          <button class="btn btn-primary" onclick="showReport('books', this)">📚 Book Stock Report</button>
+          <button class="btn btn-outline" onclick="showReport('students', this)">👨‍🎓 Student Report</button>
+          <button class="btn btn-outline" onclick="showReport('issued', this)">📤 Issued Books Report</button>
+          <button class="btn btn-outline" onclick="showReport('overdue', this)">⚠️ Overdue Report</button>
+        </div>
+
+        <div id="reportDateFilter" style="display:none;margin-bottom:16px;padding:16px;background:white;border-radius:10px;border:1px solid #E2E8F0">
+          <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0">
+              <label>From Date</label>
+              <input type="date" id="reportFrom">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>To Date</label>
+              <input type="date" id="reportTo">
+            </div>
+            <button class="btn btn-primary" onclick="loadCurrentReport()">Apply Filter</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="reportTitle">Select a Report</span>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" onclick="printReport()" id="printReportBtn" style="display:none">🖨 Print</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table id="reportTable">
+                <thead id="reportHead"></thead>
+                <tbody id="reportBody">
+                  <tr><td class="empty-table" colspan="99"><div class="empty-icon">📊</div>Select a report type above to get started.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           PAGE: SETTINGS
+      ══════════════════════════════════════ -->
+      <section class="page" id="page-settings">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Account Settings</span></div>
+            <div class="card-body">
+              <div style="text-align:center;padding:20px 0">
+                <div style="width:72px;height:72px;background:#EFF6FF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px">👤</div>
+                <div style="font-size:18px;font-weight:700;color:#0B2545" id="settingUserName">—</div>
+                <div style="font-size:13px;color:#64748B" id="settingUserEmail">—</div>
+                <span class="badge badge-navy" style="margin-top:8px" id="settingUserRole">—</span>
+              </div>
+              <hr style="border:none;border-top:1px solid #E2E8F0;margin:16px 0">
+              <form id="changePwForm" onsubmit="submitChangePassword(event)">
+                <div style="font-size:14px;font-weight:700;color:#0B2545;margin-bottom:14px">Change Password</div>
+                <div class="form-group">
+                  <label>Current Password</label>
+                  <input type="password" id="currentPw" placeholder="Enter current password" required>
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="newPw" placeholder="Min 6 characters" required>
+                </div>
+                <div class="form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="confirmPw" placeholder="Re-enter new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">🔑 Update Password</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title">Library Settings</span></div>
+            <div class="card-body">
+              <div style="padding:14px;background:#EFF6FF;border-radius:10px;margin-bottom:16px">
+                <div style="font-size:13px;font-weight:700;color:#0B2545;margin-bottom:12px">📋 Active Configuration</div>
+                <div style="display:grid;gap:10px">
+                  <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748B">Loan Period</span><span style="font-weight:600;color:#0B2545">14 days</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748B">Fine Rate</span><span style="font-weight:600;color:#0B2545">₹5.00 per day</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748B">Max Books / Student</span><span style="font-weight:600;color:#0B2545">3 books</span></div>
+                </div>
+              </div>
+              <div style="padding:14px;background:#F0FDF4;border-radius:10px;border:1px solid #A7F3D0">
+                <div style="font-size:13px;font-weight:700;color:#065F46;margin-bottom:8px">ℹ️ About This System</div>
+                <div style="font-size:12.5px;color:#059669;line-height:1.6">
+                  SPSU Library Management System<br>
+                  B.Tech Minor Project — Web Development<br>
+                  Sir Padampat Singhania University, Udaipur<br>
+                  Built with Node.js, Express, MySQL, Vanilla JS
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+  </main><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- Add/Edit Book Modal -->
+<div class="modal-overlay" id="bookModal" onclick="closeModalOnBg(event,'bookModal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title" id="bookModalTitle">Add New Book</span>
+      <button class="modal-close" onclick="closeModal('bookModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="bookForm" onsubmit="submitBook(event)">
+        <input type="hidden" id="bookId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>ISBN <span class="req">*</span></label>
+            <input type="text" id="bookIsbn" placeholder="e.g. 978-0132350884" required>
+          </div>
+          <div class="form-group">
+            <label>Category <span class="req">*</span></label>
+            <select id="bookCategory" required>
+              <option value="">Select category…</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Book Title <span class="req">*</span></label>
+          <input type="text" id="bookTitle" placeholder="Enter full book title" required>
+        </div>
+        <div class="form-group">
+          <label>Author(s) <span class="req">*</span></label>
+          <input type="text" id="bookAuthor" placeholder="e.g. Robert C. Martin" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Publisher</label>
+            <input type="text" id="bookPublisher" placeholder="e.g. Pearson, McGraw-Hill">
+          </div>
+          <div class="form-group">
+            <label>Edition Year</label>
+            <input type="number" id="bookYear" placeholder="e.g. 2020" min="1800" max="2026">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Total Copies <span class="req">*</span></label>
+            <input type="number" id="bookCopies" placeholder="1" min="1" required>
+          </div>
+          <div class="form-group">
+            <label>Shelf Location</label>
+            <input type="text" id="bookShelf" placeholder="e.g. Rack A-1">
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:8px">
+          <button type="button" class="btn btn-outline" onclick="closeModal('bookModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="bookSubmitBtn">Add Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Student Modal -->
+<div class="modal-overlay" id="studentModal" onclick="closeModalOnBg(event,'studentModal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title" id="studentModalTitle">Register New Student</span>
+      <button class="modal-close" onclick="closeModal('studentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="studentForm" onsubmit="submitStudent(event)">
+        <input type="hidden" id="studentId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Roll Number <span class="req">*</span></label>
+            <input type="text" id="sRoll" placeholder="e.g. 22CS101" required>
+          </div>
+          <div class="form-group">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="sName" placeholder="Enter full name" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="sEmail" placeholder="student@college.edu" required>
+          </div>
+          <div class="form-group">
+            <label>Phone <span class="req">*</span></label>
+            <input type="tel" id="sPhone" placeholder="10-digit mobile number" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Department <span class="req">*</span></label>
+            <input type="text" id="sDept" placeholder="e.g. Computer Science & Engineering" required>
+          </div>
+          <div class="form-group">
+            <label>Semester <span class="req">*</span></label>
+            <select id="sSem" required>
+              <option value="">Select…</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" id="statusRow" style="display:none">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="sStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="createLoginGroup">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500">
+            <input type="checkbox" id="sCreateLogin" onchange="toggleLoginFields()"> Create Login Account (Portal Access)
+          </label>
+        </div>
+        <div id="loginPasswordGroup" style="display:none">
+          <div class="form-group">
+            <label>Initial Password</label>
+            <input type="password" id="sPassword" placeholder="Leave blank for default: Student@123">
+            <div class="form-hint">Default password: Student@123</div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:8px">
+          <button type="button" class="btn btn-outline" onclick="closeModal('studentModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="studentSubmitBtn">Register</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Student History Modal -->
+<div class="modal-overlay" id="historyModal" onclick="closeModalOnBg(event,'historyModal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title" id="historyModalTitle">Borrowing History</span>
+      <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Book</th><th>Issued</th><th>Due</th><th>Returned</th><th>Fine</th><th>Status</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal-overlay" id="categoryModal" onclick="closeModalOnBg(event,'categoryModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Manage Book Categories</span>
+      <button class="modal-close" onclick="closeModal('categoryModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input type="text" id="newCatName" placeholder="New category name" style="flex:1">
+        <input type="text" id="newCatDesc" placeholder="Description (optional)" style="flex:1.5">
+        <button class="btn btn-primary" onclick="addCategory()">Add</button>
+      </div>
+      <div id="categoryList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/utils.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// ADMIN DASHBOARD — MAIN CONTROLLER
+// ═══════════════════════════════════════════════════════════
+
+let currentUser = null;
+let booksData = [];
+let studentsData = [];
+let issuedData = [];
+let currentReport = null;
+let bookSearchTimer, studentSearchTimer;
+
+// Debounced search helpers
+function debounceBookSearch() { clearTimeout(bookSearchTimer); bookSearchTimer = setTimeout(loadBooks, 350); }
+function debounceStudentSearch() { clearTimeout(studentSearchTimer); studentSearchTimer = setTimeout(loadStudents, 350); }
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  // Set date in topbar
+  document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'long', year:'numeric' });
+
+  // Set issue date fields
+  const today = new Date();
+  const due = new Date(today.getTime() + 14*86400000);
+  document.getElementById('issueDateDisplay').value = today.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('issueDueDateDisplay').value = due.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+
+  currentUser = await guardAuth('admin');
+  if (!currentUser) return;
+
+  document.getElementById('sidebarUserName').textContent = currentUser.fullName;
+  document.getElementById('settingUserName').textContent = currentUser.fullName;
+  document.getElementById('settingUserEmail').textContent = currentUser.email;
+  document.getElementById('settingUserRole').textContent = currentUser.role === 'admin' ? '🏛️ Librarian/Admin' : 'Student';
+
+  await loadDashboard();
+  await loadCategories();
+  await loadDepartments();
+});
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const r = await API.get('/api/dashboard/stats');
+  if (!r.success) return;
+  const d = r.data;
+  document.getElementById('stat-books').textContent = d.totalBooks;
+  document.getElementById('stat-students').textContent = d.totalStudents;
+  document.getElementById('stat-available').textContent = d.availableCopies;
+  document.getElementById('stat-issued').textContent = d.issuedBooks;
+  document.getElementById('stat-overdue').textContent = d.overdueBooks;
+
+  // Activity feed
+  const feed = document.getElementById('activityFeed');
+  if (d.activity.length === 0) {
+    feed.innerHTML = '<li class="activity-item"><div class="activity-dot"></div><div class="activity-text">No recent activity.</div></li>';
+  } else {
+    feed.innerHTML = d.activity.map(a => `
+      <li class="activity-item">
+        <div class="activity-dot"></div>
+        <div>
+          <div class="activity-text">${esc(a.details)}</div>
+          <div class="activity-time">${timeAgo(a.created_at)}${a.actor ? ' · ' + esc(a.actor) : ''}</div>
+        </div>
+      </li>`).join('');
+  }
+
+  // Top books
+  const topEl = document.getElementById('topBooksList');
+  if (!d.topBooks.length) {
+    topEl.innerHTML = '<div class="empty-table"><div class="empty-icon">📊</div>No data yet.</div>';
+  } else {
+    topEl.innerHTML = d.topBooks.map((b, i) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #E2E8F0">
+        <div style="width:28px;height:28px;background:#EFF6FF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#133E87;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title)}</div>
+          <div style="font-size:11px;color:#64748B">${esc(b.author)}</div>
+        </div>
+        <span class="badge badge-navy">${b.issue_count}x</span>
+      </div>`).join('');
+  }
+}
+
+// ─── BOOKS ────────────────────────────────────────────────────────────────────
+async function loadBooks() {
+  const search = document.getElementById('bookSearch').value;
+  const category = document.getElementById('bookCatFilter').value;
+  const available = document.getElementById('bookAvailFilter').value;
+  let url = `/api/books?search=${encodeURIComponent(search)}&category=${category}&available=${available}`;
+  const r = await API.get(url);
+  booksData = r.data || [];
+  renderBooksTable(booksData);
+}
+
+function renderBooksTable(books) {
+  const tbody = document.getElementById('booksTableBody');
+  if (!books.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-table"><div class="empty-icon">📚</div>No books found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = books.map(b => `
+    <tr>
+      <td><code style="font-size:11.5px;background:#F1F5F9;padding:2px 6px;border-radius:4px">${esc(b.isbn)}</code></td>
+      <td>
+        <div style="font-weight:600;color:#1E293B">${esc(b.title)}</div>
+        <div style="font-size:12px;color:#64748B">${esc(b.author)}</div>
+      </td>
+      <td><span class="badge badge-navy">${esc(b.category_name)}</span></td>
+      <td>${availabilityBadge(b.available_copies, b.total_copies)}</td>
+      <td style="font-size:12px;color:#64748B">${esc(b.shelf_location) || '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="openEditBookModal(${b.id})" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteBook(${b.id})" title="Delete">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadCategories() {
+  const r = await API.get('/api/books/categories');
+  const cats = r.data || [];
+  // Populate book filter dropdown
+  const filter = document.getElementById('bookCatFilter');
+  filter.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  // Populate book form dropdown
+  const sel = document.getElementById('bookCategory');
+  sel.innerHTML = '<option value="">Select category…</option>' + cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  // Category modal list
+  const catList = document.getElementById('categoryList');
+  if (catList) {
+    catList.innerHTML = cats.map(c => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #E2E8F0;font-size:13px">
+        <div><div style="font-weight:600">${esc(c.name)}</div>${c.description ? `<div style="color:#64748B;font-size:12px">${esc(c.description)}</div>` : ''}</div>
+      </div>`).join('');
+  }
+  return cats;
+}
+
+function openAddBookModal() {
+  document.getElementById('bookId').value = '';
+  document.getElementById('bookForm').reset();
+  document.getElementById('bookModalTitle').textContent = 'Add New Book';
+  document.getElementById('bookSubmitBtn').textContent = 'Add Book';
+  document.getElementById('bookCopies').value = 1;
+  openModal('bookModal');
+}
+
+async function openEditBookModal(id) {
+  const r = await API.get(`/api/books/${id}`);
+  if (!r.success) return ToastManager.error('Could not load book details.');
+  const b = r.data;
+  document.getElementById('bookId').value = b.id;
+  document.getElementById('bookIsbn').value = b.isbn;
+  document.getElementById('bookTitle').value = b.title;
+  document.getElementById('bookAuthor').value = b.author;
+  document.getElementById('bookCategory').value = b.category_id;
+  document.getElementById('bookPublisher').value = b.publisher || '';
+  document.getElementById('bookYear').value = b.edition_year || '';
+  document.getElementById('bookCopies').value = b.total_copies;
+  document.getElementById('bookShelf').value = b.shelf_location || '';
+  document.getElementById('bookModalTitle').textContent = 'Edit Book';
+  document.getElementById('bookSubmitBtn').textContent = 'Save Changes';
+  openModal('bookModal');
+}
+
+async function submitBook(e) {
+  e.preventDefault();
+  const id = document.getElementById('bookId').value;
+  const payload = {
+    isbn: document.getElementById('bookIsbn').value,
+    title: document.getElementById('bookTitle').value,
+    author: document.getElementById('bookAuthor').value,
+    category_id: document.getElementById('bookCategory').value,
+    publisher: document.getElementById('bookPublisher').value,
+    edition_year: document.getElementById('bookYear').value || null,
+    total_copies: document.getElementById('bookCopies').value,
+    shelf_location: document.getElementById('bookShelf').value
+  };
+  const btn = document.getElementById('bookSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const r = id ? await API.put(`/api/books/${id}`, payload) : await API.post('/api/books', payload);
+  btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Add Book';
+  if (r.success) {
+    ToastManager.success(r.message);
+    closeModal('bookModal');
+    await loadBooks();
+    await loadDashboard();
+  } else {
+    ToastManager.error(r.message);
+  }
+}
+
+async function deleteBook(id) {
+  const book = booksData.find(b => b.id === id);
+  const title = book ? book.title : 'this book';
+  if (!showConfirm(`Remove "${title}" from the library?\n\nThis action cannot be undone.`)) return;
+  const r = await API.delete(`/api/books/${id}`);
+  if (r.success) { ToastManager.success(r.message); await loadBooks(); await loadDashboard(); }
+  else ToastManager.error(r.message);
+}
+
+function openCategoryModal() {
+  loadCategories();
+  openModal('categoryModal');
+}
+
+async function addCategory() {
+  const name = document.getElementById('newCatName').value.trim();
+  const desc = document.getElementById('newCatDesc').value.trim();
+  if (!name) return ToastManager.warning('Category name is required.');
+  const r = await API.post('/api/books/categories', { name, description: desc });
+  if (r.success) { ToastManager.success('Category added!'); document.getElementById('newCatName').value = ''; document.getElementById('newCatDesc').value = ''; await loadCategories(); }
+  else ToastManager.error(r.message);
+}
+
+// ─── STUDENTS ────────────────────────────────────────────────────────────────
+async function loadStudents() {
+  const search = document.getElementById('studentSearch').value;
+  const dept = document.getElementById('deptFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const r = await API.get(`/api/students?search=${encodeURIComponent(search)}&department=${encodeURIComponent(dept)}&status=${status}`);
+  studentsData = r.data || [];
+  renderStudentsTable(studentsData);
+}
+
+function renderStudentsTable(students) {
+  const tbody = document.getElementById('studentsTableBody');
+  if (!students.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-table"><div class="empty-icon">👨‍🎓</div>No students found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = students.map(s => `
+    <tr>
+      <td><code style="font-size:12px;font-weight:600;color:#0B2545">${esc(s.roll_number)}</code></td>
+      <td>
+        <div style="font-weight:600">${esc(s.full_name)}</div>
+        <div style="font-size:12px;color:#64748B">${esc(s.email)}</div>
+      </td>
+      <td style="font-size:12.5px">${esc(s.department)}</td>
+      <td style="text-align:center">${s.semester}</td>
+      <td style="font-size:12px">${esc(s.phone)}</td>
+      <td style="text-align:center">
+        ${s.active_loans > 0 ? `<span class="badge badge-warning">${s.active_loans} book(s)</span>` : '<span class="badge badge-muted">None</span>'}
+      </td>
+      <td>${studentStatusBadge(s.status)}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="viewHistory(${s.id})" title="Borrowing History">📋</button>
+          <button class="btn btn-outline btn-sm" onclick="openEditStudentModal(${s.id})" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id})" title="Delete">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadDepartments() {
+  const r = await API.get('/api/students/departments');
+  const depts = r.data || [];
+  const sel = document.getElementById('deptFilter');
+  sel.innerHTML = '<option value="">All Departments</option>' + depts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+}
+
+function openAddStudentModal() {
+  document.getElementById('studentId').value = '';
+  document.getElementById('studentForm').reset();
+  document.getElementById('studentModalTitle').textContent = 'Register New Student';
+  document.getElementById('studentSubmitBtn').textContent = 'Register';
+  document.getElementById('statusRow').style.display = 'none';
+  document.getElementById('createLoginGroup').style.display = 'block';
+  document.getElementById('loginPasswordGroup').style.display = 'none';
+  openModal('studentModal');
+}
+
+async function openEditStudentModal(id) {
+  const r = await API.get(`/api/students/${id}`);
+  if (!r.success) return ToastManager.error('Could not load student details.');
+  const s = r.data;
+  document.getElementById('studentId').value = s.id;
+  document.getElementById('sRoll').value = s.roll_number;
+  document.getElementById('sName').value = s.full_name;
+  document.getElementById('sEmail').value = s.email;
+  document.getElementById('sPhone').value = s.phone;
+  document.getElementById('sDept').value = s.department;
+  document.getElementById('sSem').value = s.semester;
+  document.getElementById('sStatus').value = s.status;
+  document.getElementById('statusRow').style.display = '';
+  document.getElementById('createLoginGroup').style.display = 'none';
+  document.getElementById('loginPasswordGroup').style.display = 'none';
+  document.getElementById('studentModalTitle').textContent = 'Edit Student';
+  document.getElementById('studentSubmitBtn').textContent = 'Save Changes';
+  openModal('studentModal');
+}
+
+function toggleLoginFields() {
+  const show = document.getElementById('sCreateLogin').checked;
+  document.getElementById('loginPasswordGroup').style.display = show ? 'block' : 'none';
+}
+
+async function submitStudent(e) {
+  e.preventDefault();
+  const id = document.getElementById('studentId').value;
+  const payload = {
+    roll_number: document.getElementById('sRoll').value,
+    full_name: document.getElementById('sName').value,
+    email: document.getElementById('sEmail').value,
+    phone: document.getElementById('sPhone').value,
+    department: document.getElementById('sDept').value,
+    semester: document.getElementById('sSem').value,
+    status: document.getElementById('sStatus').value || 'active',
+    createLogin: document.getElementById('sCreateLogin').checked,
+    password: document.getElementById('sPassword').value
+  };
+  const btn = document.getElementById('studentSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const r = id ? await API.put(`/api/students/${id}`, payload) : await API.post('/api/students', payload);
+  btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Register';
+  if (r.success) {
+    ToastManager.success(r.message);
+    closeModal('studentModal');
+    await loadStudents();
+    await loadDashboard();
+    await loadDepartments();
+  } else {
+    ToastManager.error(r.message);
+  }
+}
+
+async function deleteStudent(id) {
+  const student = studentsData.find(s => s.id === id);
+  const name = student ? student.full_name : 'this student';
+  if (!showConfirm(`Remove student "${name}" from the system?\n\nThis cannot be undone.`)) return;
+  const r = await API.delete(`/api/students/${id}`);
+  if (r.success) { ToastManager.success(r.message); await loadStudents(); await loadDashboard(); }
+  else ToastManager.error(r.message);
+}
+
+async function viewHistory(id) {
+  const student = studentsData.find(s => s.id === id);
+  const name = student ? student.full_name : 'Student';
+  document.getElementById('historyModalTitle').textContent = `Borrowing History — ${name}`;
+  document.getElementById('historyBody').innerHTML = '<tr><td colspan="6" class="empty-table">Loading…</td></tr>';
+  openModal('historyModal');
+  const r = await API.get(`/api/students/${id}/history`);
+  const rows = r.data || [];
+  if (!rows.length) {
+    document.getElementById('historyBody').innerHTML = '<tr><td colspan="6" class="empty-table"><div class="empty-icon">📋</div>No borrowing history found.</td></tr>';
+    return;
+  }
+  document.getElementById('historyBody').innerHTML = rows.map(h => {
+    let dueClass = '';
+    if (h.status === 'OVERDUE') dueClass = 'color:#DC2626;font-weight:600';
+    else if (h.status === 'ISSUED' && h.due_date && new Date(h.due_date) < new Date()) dueClass = 'color:#D97706';
+    return `<tr>
+      <td><div style="font-weight:600;font-size:13px">${esc(h.book_title)}</div><div style="font-size:11.5px;color:#64748B">${esc(h.isbn)}</div></td>
+      <td>${formatDate(h.issue_date)}</td>
+      <td style="${dueClass}">${formatDate(h.due_date)}</td>
+      <td>${h.return_date ? formatDate(h.return_date) : '—'}</td>
+      <td>${h.fine_amount > 0 ? `<span style="color:#DC2626;font-weight:600">₹${h.fine_amount}</span>` : '—'}</td>
+      <td>${issueBadge(h.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── ISSUE BOOK ───────────────────────────────────────────────────────────────
+let selectedStudentForIssue = null;
+let selectedBookForIssue = null;
+window._studentsIssueMap = {};
+window._booksIssueMap = {};
+
+async function searchStudentsForIssue() {
+  const q = document.getElementById('issueStudentSearch').value;
+  if (q.length < 2) { document.getElementById('issueStudentDropdown').style.display = 'none'; return; }
+  const r = await API.get(`/api/students?search=${encodeURIComponent(q)}&status=active`);
+  const list = r.data || [];
+  const dd = document.getElementById('issueStudentDropdown');
+  if (!list.length) {
+    dd.innerHTML = '<div style="padding:12px 16px;color:#64748B;font-size:13px">No active students found.</div>';
+  } else {
+    list.forEach(s => window._studentsIssueMap[s.id] = s);
+    dd.innerHTML = list.slice(0, 8).map(s => `
+      <div onclick="selectStudentForIssue(${s.id})"
+           style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #F1F5F9;font-size:13px"
+           onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='white'">
+        <div style="font-weight:600">${esc(s.full_name)}</div>
+        <div style="color:#64748B;font-size:11.5px">${esc(s.roll_number)} · ${esc(s.department)}</div>
+      </div>`).join('');
+  }
+  dd.style.display = 'block';
+}
+
+function selectStudentForIssue(studentId) {
+  const s = typeof studentId === 'object' ? studentId : window._studentsIssueMap[studentId];
+  if (!s) return;
+  selectedStudentForIssue = s;
+  document.getElementById('issueStudentId').value = s.id;
+  document.getElementById('issueStudentSearch').value = s.full_name;
+  document.getElementById('issueStudentDropdown').style.display = 'none';
+  const info = document.getElementById('selectedStudentInfo');
+  info.style.display = 'block';
+  info.innerHTML = `👨‍🎓 <strong>${esc(s.full_name)}</strong> · Roll: ${esc(s.roll_number)} · ${esc(s.department)} · Sem ${s.semester}`;
+}
+
+async function searchBooksForIssue() {
+  const q = document.getElementById('issueBookSearch').value;
+  if (q.length < 2) { document.getElementById('issueBookDropdown').style.display = 'none'; return; }
+  const r = await API.get(`/api/books/availability?q=${encodeURIComponent(q)}`);
+  const list = r.data || [];
+  const dd = document.getElementById('issueBookDropdown');
+  if (!list.length) {
+    dd.innerHTML = '<div style="padding:12px 16px;color:#64748B;font-size:13px">No books found.</div>';
+  } else {
+    list.forEach(b => window._booksIssueMap[b.id] = b);
+    dd.innerHTML = list.map(b => {
+      const avail = b.available_copies > 0;
+      return `<div onclick="${avail ? `selectBookForIssue(${b.id})` : ''}"
+           style="padding:10px 16px;cursor:${avail ? 'pointer' : 'not-allowed'};border-bottom:1px solid #F1F5F9;font-size:13px;opacity:${avail ? 1 : 0.6}"
+           ${avail ? 'onmouseover="this.style.background=\'#EFF6FF\'" onmouseout="this.style.background=\'white\'"' : ''}>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600">${esc(b.title)}</div>
+            <div style="color:#64748B;font-size:11.5px">${esc(b.isbn)} · ${esc(b.author)}</div>
+          </div>
+          <span class="badge ${avail ? 'badge-success' : 'badge-danger'}">${avail ? b.available_copies + ' avail.' : 'Not Available'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  dd.style.display = 'block';
+}
+
+function selectBookForIssue(bookId) {
+  const b = typeof bookId === 'object' ? bookId : window._booksIssueMap[bookId];
+  if (!b) return;
+  selectedBookForIssue = b;
+  document.getElementById('issueBookId').value = b.id;
+  document.getElementById('issueBookSearch').value = b.title;
+  document.getElementById('issueBookDropdown').style.display = 'none';
+  const info = document.getElementById('selectedBookInfo');
+  info.style.display = 'block';
+  info.innerHTML = `📖 <strong>${esc(b.title)}</strong> · ${esc(b.author)} · <span style="color:${b.available_copies > 0 ? '#059669' : '#DC2626'}">${b.available_copies} of ${b.total_copies} available</span>`;
+}
+
+async function submitIssue(e) {
+  e.preventDefault();
+  const bookId = document.getElementById('issueBookId').value;
+  const studentId = document.getElementById('issueStudentId').value;
+  if (!bookId || !studentId) return ToastManager.warning('Please select both a student and a book.');
+  const btn = document.getElementById('issueSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  const r = await API.post('/api/issues/issue', {
+    book_id: bookId,
+    student_id: studentId,
+    remarks: document.getElementById('issueRemarks').value
+  });
+  btn.disabled = false; btn.textContent = '📤 Issue Book';
+  if (r.success) {
+    ToastManager.success(r.message, 5000);
+    document.getElementById('issueForm').reset();
+    document.getElementById('issueStudentId').value = '';
+    document.getElementById('issueBookId').value = '';
+    document.getElementById('selectedStudentInfo').style.display = 'none';
+    document.getElementById('selectedBookInfo').style.display = 'none';
+    selectedStudentForIssue = null;
+    selectedBookForIssue = null;
+    await loadRecentIssues();
+    await loadDashboard();
+  } else {
+    ToastManager.error(r.message);
+  }
+}
+
+async function loadRecentIssues() {
+  const r = await API.get('/api/issues?status=ISSUED');
+  const rows = (r.data || []).slice(0, 8);
+  const tbody = document.getElementById('recentIssuesBody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-table">No active issues.</td></tr>';
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  tbody.innerHTML = rows.map(i => {
+    const overdue = i.due_date < today;
+    return `<tr>
+      <td style="font-size:12.5px;font-weight:600">${esc(i.book_title)}</td>
+      <td style="font-size:12px">${esc(i.student_name)}<br><span style="color:#64748B">${esc(i.roll_number)}</span></td>
+      <td style="font-size:12px;color:${overdue ? '#DC2626' : '#334155'};font-weight:${overdue ? 700 : 400}">${formatDate(i.due_date)}${overdue ? ' ⚠️' : ''}</td>
+      <td>${issueBadge(overdue ? 'OVERDUE' : 'ISSUED')}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── RETURN BOOK ──────────────────────────────────────────────────────────────
+let selectedIssueForReturn = null;
+let allIssuedForReturn = [];
+
+async function loadIssuedForReturn() {
+  const r = await API.get('/api/issues?status=ISSUED');
+  allIssuedForReturn = r.data || [];
+  renderIssuedReturnTable(allIssuedForReturn);
+}
+
+function renderIssuedReturnTable(issues) {
+  const tbody = document.getElementById('issuedReturnBody');
+  const today = new Date().toISOString().split('T')[0];
+  if (!issues.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-table">No books currently issued.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = issues.map(i => {
+    const overdue = i.due_date < today;
+    const days = overdue ? Math.floor((new Date(today) - new Date(i.due_date)) / 86400000) : 0;
+    const fine = overdue ? (days * 5).toFixed(2) : '0.00';
+    return `<tr>
+      <td>
+        <div style="font-size:13px;font-weight:600">${esc(i.book_title)}</div>
+        <div style="font-size:11px;color:#64748B">${esc(i.isbn)}</div>
+      </td>
+      <td style="font-size:12.5px">${esc(i.student_name)}<br><span style="color:#64748B;font-size:11.5px">${esc(i.roll_number)}</span></td>
+      <td style="font-size:12.5px;color:${overdue ? '#DC2626' : '#334155'};font-weight:${overdue ? 700 : 400}">${formatDate(i.due_date)}${overdue ? ' ⚠️' : ''}</td>
+      <td style="font-size:13px;font-weight:600;color:${overdue ? '#DC2626' : '#059669'}">₹${fine}</td>
+      <td><button class="btn btn-success btn-sm" onclick="quickReturn(${i.id})">📥 Return</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function searchForReturn() {
+  const q = document.getElementById('returnSearch').value.toLowerCase();
+  if (q.length < 2) { document.getElementById('returnDropdown').style.display = 'none'; return; }
+  if (!allIssuedForReturn.length) await loadIssuedForReturn();
+  const filtered = allIssuedForReturn.filter(i =>
+    i.student_name.toLowerCase().includes(q) ||
+    i.roll_number.toLowerCase().includes(q) ||
+    i.book_title.toLowerCase().includes(q) ||
+    i.isbn.toLowerCase().includes(q)
+  );
+  const dd = document.getElementById('returnDropdown');
+  if (!filtered.length) {
+    dd.innerHTML = '<div style="padding:12px 16px;color:#64748B;font-size:13px">No matching active issues.</div>';
+  } else {
+    const today = new Date().toISOString().split('T')[0];
+    dd.innerHTML = filtered.slice(0, 8).map(i => {
+      const overdue = i.due_date < today;
+      const days = overdue ? Math.floor((new Date(today) - new Date(i.due_date)) / 86400000) : 0;
+      return `<div onclick="selectIssueForReturn(${i.id})"
+           style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #F1F5F9;font-size:13px"
+           onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='white'">
+        <div style="font-weight:600">${esc(i.book_title)}</div>
+        <div style="color:#64748B;font-size:11.5px">${esc(i.student_name)} (${esc(i.roll_number)}) · Due: ${formatDate(i.due_date)}</div>
+        ${overdue ? `<div style="color:#DC2626;font-size:11.5px;font-weight:600">⚠️ ${days} days overdue · Fine: ₹${(days*5).toFixed(2)}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+  dd.style.display = 'block';
+}
+
+function selectIssueForReturn(issueIdOrObj) {
+  const issue = typeof issueIdOrObj === 'object' ? issueIdOrObj : allIssuedForReturn.find(x => x.id === issueIdOrObj);
+  if (!issue) return;
+  selectedIssueForReturn = issue;
+  document.getElementById('returnSearch').value = `${issue.book_title} — ${issue.student_name}`;
+  document.getElementById('returnDropdown').style.display = 'none';
+  const today = new Date().toISOString().split('T')[0];
+  const overdue = issue.due_date < today;
+  const days = overdue ? Math.floor((new Date(today) - new Date(issue.due_date)) / 86400000) : 0;
+  const fine = overdue ? (days * 5).toFixed(2) : '0.00';
+  document.getElementById('returnDetailsContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+      <div><span style="color:#64748B">Book:</span> <strong>${esc(issue.book_title)}</strong></div>
+      <div><span style="color:#64748B">ISBN:</span> ${esc(issue.isbn)}</div>
+      <div><span style="color:#64748B">Student:</span> <strong>${esc(issue.student_name)}</strong></div>
+      <div><span style="color:#64748B">Roll No:</span> ${esc(issue.roll_number)}</div>
+      <div><span style="color:#64748B">Issue Date:</span> ${formatDate(issue.issue_date)}</div>
+      <div><span style="color:#64748B">Due Date:</span> <span style="color:${overdue ? '#DC2626' : '#059669'};font-weight:600">${formatDate(issue.due_date)}</span></div>
+      ${overdue ? `<div style="grid-column:1/-1;padding:8px;background:#FEF2F2;border-radius:6px;color:#DC2626;font-weight:600">⚠️ ${days} days overdue · Fine to collect: ₹${fine}</div>` : `<div style="color:#059669;font-weight:600">✅ Within due date — No fine</div>`}
+    </div>`;
+  const infoCard = document.getElementById('returnSelectedInfo');
+  infoCard.style.display = 'block';
+  infoCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function quickReturn(issueId) {
+  const issue = allIssuedForReturn.find(i => i.id === issueId);
+  if (issue) selectIssueForReturn(issue);
+  document.getElementById('returnSearch').focus();
+}
+
+async function submitReturn() {
+  if (!selectedIssueForReturn) return ToastManager.warning('Please select a book to return.');
+  const btn = document.getElementById('returnBtn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  const r = await API.post(`/api/issues/${selectedIssueForReturn.id}/return`, {
+    remarks: document.getElementById('returnRemarks').value
+  });
+  btn.disabled = false; btn.textContent = '📥 Confirm Return';
+  if (r.success) {
+    ToastManager.success(r.message, 5000);
+    document.getElementById('returnSelectedInfo').style.display = 'none';
+    document.getElementById('returnSearch').value = '';
+    document.getElementById('returnRemarks').value = '';
+    selectedIssueForReturn = null;
+    await loadIssuedForReturn();
+    await loadDashboard();
+  } else {
+    ToastManager.error(r.message);
+  }
+}
+
+// ─── OVERDUE ──────────────────────────────────────────────────────────────────
+async function loadOverdue() {
+  const r = await API.get('/api/issues/overdue');
+  const rows = r.data || [];
+  const tbody = document.getElementById('overdueBody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-table"><div class="empty-icon">✅</div>No overdue books! All books are within their due dates.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(o => `
+    <tr>
+      <td><div style="font-weight:600;font-size:13px">${esc(o.book_title)}</div><div style="font-size:11.5px;color:#64748B">${esc(o.isbn)}</div></td>
+      <td><div style="font-weight:600">${esc(o.student_name)}</div></td>
+      <td style="font-size:12.5px">${esc(o.department)}</td>
+      <td style="font-size:12.5px">${esc(o.phone)}</td>
+      <td>${formatDate(o.issue_date)}</td>
+      <td style="color:#DC2626;font-weight:600">${formatDate(o.due_date)}</td>
+      <td><span class="badge badge-danger">${o.days_overdue} days</span></td>
+      <td style="font-weight:700;color:#DC2626">₹${o.current_fine}</td>
+      <td><button class="btn btn-success btn-sm" onclick="quickReturnFromOverdue(${o.id})">📥 Return</button></td>
+    </tr>`).join('');
+}
+
+async function quickReturnFromOverdue(issueId) {
+  if (!confirm('Process return for this overdue book?')) return;
+  const r = await API.post(`/api/issues/${issueId}/return`, {});
+  if (r.success) { ToastManager.success(r.message, 5000); await loadOverdue(); await loadDashboard(); }
+  else ToastManager.error(r.message);
+}
+
+function printOverdueReport() {
+  const tbl = document.getElementById('overdueTable');
+  printSection('Overdue Books Report', tbl.outerHTML);
+}
+
+// ─── AVAILABILITY SEARCH ──────────────────────────────────────────────────────
+async function searchAvailability() {
+  const q = document.getElementById('availSearch').value.trim();
+  if (!q) return ToastManager.warning('Please enter a search term.');
+  const r = await API.get(`/api/books/availability?q=${encodeURIComponent(q)}`);
+  const books = r.data || [];
+  document.getElementById('availResults').style.display = 'block';
+  document.getElementById('availResultCount').textContent = `${books.length} result(s) found`;
+  const tbody = document.getElementById('availResultsBody');
+  if (!books.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-table"><div class="empty-icon">🔍</div>No books found matching your search.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = books.map(b => `
+    <tr>
+      <td><code style="font-size:11.5px;background:#F1F5F9;padding:2px 6px;border-radius:4px">${esc(b.isbn)}</code></td>
+      <td><div style="font-weight:600">${esc(b.title)}</div></td>
+      <td style="font-size:12.5px">${esc(b.author)}</td>
+      <td><span class="badge badge-navy">${esc(b.category_name)}</span></td>
+      <td style="font-size:12.5px;color:#64748B">${esc(b.shelf_location) || '—'}</td>
+      <td>${availabilityBadge(b.available_copies, b.total_copies)}</td>
+    </tr>`).join('');
+}
+
+// ─── REPORTS ──────────────────────────────────────────────────────────────────
+let reportData = [];
+
+async function showReport(type, el) {
+  currentReport = type;
+  document.querySelectorAll('#reportButtons .btn').forEach(b => b.className = 'btn btn-outline');
+  if (el) el.className = 'btn btn-primary';
+  else if (window.event && window.event.target) window.event.target.className = 'btn btn-primary';
+  document.getElementById('reportDateFilter').style.display = type === 'issued' ? 'block' : 'none';
+  document.getElementById('printReportBtn').style.display = 'inline-flex';
+  await loadCurrentReport();
+}
+
+async function loadCurrentReport() {
+  const titles = { books: 'Book Stock Report', students: 'Student Report', issued: 'Issued Books Report', overdue: 'Overdue Report' };
+  document.getElementById('reportTitle').textContent = titles[currentReport] || '';
+
+  let url = `/api/reports/${currentReport}`;
+  if (currentReport === 'issued') {
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+    if (from || to) url += `?from=${from}&to=${to}`;
+  }
+
+  const r = await API.get(url);
+  reportData = r.data || [];
+
+  const headers = {
+    books: ['ISBN','Title','Author','Category','Publisher','Year','Total','Available','Issued','Shelf'],
+    students: ['Roll No.','Full Name','Email','Department','Sem','Status','Active Loans','Returned','Fine Paid'],
+    issued: ['ID','Book','ISBN','Student','Roll No.','Dept','Issue Date','Due Date','Return Date','Fine','Status'],
+    overdue: ['Book','ISBN','Student','Roll No.','Phone','Dept','Issue Date','Due Date','Days Overdue','Fine (₹)']
+  };
+
+  document.getElementById('reportHead').innerHTML = '<tr>' + headers[currentReport].map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+  if (!reportData.length) {
+    document.getElementById('reportBody').innerHTML = '<tr><td colspan="20" class="empty-table"><div class="empty-icon">📊</div>No data found for this report.</td></tr>';
+    return;
+  }
+
+  const rows = {
+    books: reportData.map(b => `<tr>
+      <td><code style="font-size:11.5px">${esc(b.isbn)}</code></td>
+      <td style="font-weight:600">${esc(b.title)}</td><td>${esc(b.author)}</td>
+      <td><span class="badge badge-navy">${esc(b.category)}</span></td>
+      <td>${esc(b.publisher)||'—'}</td><td>${b.edition_year||'—'}</td>
+      <td>${b.total_copies}</td>
+      <td style="color:${b.available_copies>0?'#059669':'#DC2626'};font-weight:600">${b.available_copies}</td>
+      <td>${b.issued_copies}</td><td>${esc(b.shelf_location)||'—'}</td>
+    </tr>`),
+    students: reportData.map(s => `<tr>
+      <td style="font-weight:600;color:#0B2545">${esc(s.roll_number)}</td>
+      <td>${esc(s.full_name)}</td><td style="font-size:12px">${esc(s.email)}</td>
+      <td>${esc(s.department)}</td><td>${s.semester}</td>
+      <td>${studentStatusBadge(s.status)}</td>
+      <td>${s.active_loans}</td><td>${s.books_returned}</td>
+      <td style="color:${s.total_fine_paid>0?'#DC2626':'inherit'}">₹${s.total_fine_paid}</td>
+    </tr>`),
+    issued: reportData.map(i => `<tr>
+      <td>${i.id}</td>
+      <td style="font-weight:600;font-size:12.5px">${esc(i.book_title)}</td>
+      <td><code style="font-size:11px">${esc(i.isbn)}</code></td>
+      <td>${esc(i.student_name)}</td>
+      <td style="font-weight:600;color:#0B2545">${esc(i.roll_number)}</td>
+      <td>${esc(i.department)}</td>
+      <td>${formatDate(i.issue_date)}</td>
+      <td>${formatDate(i.due_date)}</td>
+      <td>${i.return_date ? formatDate(i.return_date) : '—'}</td>
+      <td>${i.fine_amount > 0 ? `<span style="color:#DC2626;font-weight:600">₹${i.fine_amount}</span>` : '—'}</td>
+      <td>${issueBadge(i.status)}</td>
+    </tr>`),
+    overdue: reportData.map(o => `<tr>
+      <td style="font-weight:600">${esc(o.book_title)}</td>
+      <td><code style="font-size:11px">${esc(o.isbn)}</code></td>
+      <td>${esc(o.student_name)}</td>
+      <td style="font-weight:600;color:#0B2545">${esc(o.roll_number)}</td>
+      <td>${esc(o.phone)}</td><td>${esc(o.department)}</td>
+      <td>${formatDate(o.issue_date)}</td>
+      <td style="color:#DC2626;font-weight:600">${formatDate(o.due_date)}</td>
+      <td><span class="badge badge-danger">${o.days_overdue}d</span></td>
+      <td style="color:#DC2626;font-weight:700">₹${o.accrued_fine}</td>
+    </tr>`)
+  };
+
+  document.getElementById('reportBody').innerHTML = (rows[currentReport] || []).join('');
+}
+
+function printReport() {
+  if (!currentReport || !reportData.length) return ToastManager.warning('Load a report first.');
+  const tbl = document.getElementById('reportTable');
+  const titles = { books: 'Book Stock Report', students: 'Student Report', issued: 'Issued Books Report', overdue: 'Overdue Report' };
+  printSection(titles[currentReport], tbl.outerHTML);
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+async function submitChangePassword(e) {
+  e.preventDefault();
+  const currentPw = document.getElementById('currentPw').value;
+  const newPw = document.getElementById('newPw').value;
+  const confirmPw = document.getElementById('confirmPw').value;
+  if (newPw !== confirmPw) return ToastManager.error('New passwords do not match.');
+  if (newPw.length < 6) return ToastManager.warning('Password must be at least 6 characters.');
+  const r = await API.post('/api/auth/change-password', { currentPassword: currentPw, newPassword: newPw });
+  if (r.success) {
+    ToastManager.success('Password updated successfully!');
+    document.getElementById('changePwForm').reset();
+  } else {
+    ToastManager.error(r.message);
+  }
+}
+
+// ─── PAGE NAVIGATION LIFECYCLE ──────────────────────────────
+window.onPageNavigated = function(pageId) {
+  if (pageId === 'page-books') loadBooks();
+  if (pageId === 'page-students') loadStudents();
+  if (pageId === 'page-issue') loadRecentIssues();
+  if (pageId === 'page-return') loadIssuedForReturn();
+  if (pageId === 'page-overdue') loadOverdue();
+};
+
+// Close dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#issueStudentSearch') && !e.target.closest('#issueStudentDropdown'))
+    document.getElementById('issueStudentDropdown').style.display = 'none';
+  if (!e.target.closest('#issueBookSearch') && !e.target.closest('#issueBookDropdown'))
+    document.getElementById('issueBookDropdown').style.display = 'none';
+  if (!e.target.closest('#returnSearch') && !e.target.closest('#returnDropdown'))
+    document.getElementById('returnDropdown').style.display = 'none';
+});
+</script>
+</body>
+</html>

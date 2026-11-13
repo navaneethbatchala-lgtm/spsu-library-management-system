@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal — SPSU Library</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">📚</span>
+      <h2>SPSU Library</h2>
+      <p>Student Self-Service Portal</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">My Library</div>
+      <button class="nav-link active" data-page="page-home" onclick="navigateTo('page-home')">
+        <span class="icon">🏠</span> My Dashboard
+      </button>
+      <button class="nav-link" data-page="page-mybooks" onclick="navigateTo('page-mybooks')">
+        <span class="icon">📤</span> My Issued Books
+      </button>
+      <button class="nav-link" data-page="page-history" onclick="navigateTo('page-history')">
+        <span class="icon">📋</span> Borrowing History
+      </button>
+      <div class="nav-section-title">Library Search</div>
+      <button class="nav-link" data-page="page-search" onclick="navigateTo('page-search')">
+        <span class="icon">🔍</span> Search Availability
+      </button>
+      <button class="nav-link" data-page="page-catalog" onclick="navigateTo('page-catalog')">
+        <span class="icon">📖</span> Book Catalog
+      </button>
+      <div class="nav-section-title">My Account</div>
+      <button class="nav-link" data-page="page-profile" onclick="navigateTo('page-profile')">
+        <span class="icon">👤</span> My Profile & ID Card
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="sidebarAvatar">👨‍🎓</div>
+        <div class="user-info">
+          <div class="name" id="sidebarName">Student</div>
+          <div class="role" id="sidebarRoll">Student Portal</div>
+        </div>
+      </div>
+      <div id="adminSwitchLink" style="display:none">
+        <a href="/pages/admin-dashboard.html" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px;font-size:12px;color:white;border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.08)">
+          🏛️ Back to Admin Panel
+        </a>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="page-title" id="pageTitle">My Dashboard</div>
+          <div class="page-breadcrumb">Sir Padampat Singhania University — Central Library</div>
+        </div>
+      </div>
+      <div class="topbar-right" style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary btn-sm" onclick="showDigitalCard()" style="font-size:12px;display:inline-flex;align-items:center;gap:6px">
+          <span>🪪</span> Digital Library Card
+        </button>
+        <span style="font-size:12px;color:#64748B" id="topbarDate"></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- FACULTY / ADMIN PREVIEW BANNER -->
+      <div id="adminPreviewBanner" style="display:none;margin-bottom:20px;border-radius:12px;padding:14px 18px;border:1.5px solid #93C5FD;background:#EFF6FF;color:#1E3A8A;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:26px">👨‍🏫</span>
+          <div>
+            <div style="font-weight:700;font-size:14px">Faculty & Admin Evaluation Mode</div>
+            <div style="font-size:12px;opacity:0.85">You are previewing the Student Portal. Switch between students to inspect different loan statuses:</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label style="font-size:12px;font-weight:700;color:#1E3A8A">Switch Student Record:</label>
+          <select id="previewStudentSelect" class="form-control" style="font-size:13px;padding:6px 12px;border-radius:8px;background:white;border:1.5px solid #3B82F6;font-weight:600;min-width:270px" onchange="onStudentSwitcherChange(this.value)">
+            <option value="">Loading students...</option>
+          </select>
+          <a href="/pages/admin-dashboard.html" class="btn btn-primary btn-sm" style="font-size:12px;padding:6px 14px">
+            🏛️ Back to Admin Panel
+          </a>
+        </div>
+      </div>
+
+      <!-- OVERDUE / FINE NOTICE BANNER -->
+      <div id="fineNoticeBanner" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px 18px;margin-bottom:20px;color:#991B1B">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:24px">⚠️</span>
+            <div>
+              <div style="font-weight:700;font-size:14px">Central Library Notice: Overdue Item & Late Fine</div>
+              <div style="font-size:12.5px;margin-top:2px" id="fineNoticeText">You have 1 overdue book. Late return fine is charged at ₹5.00/day. Please return it at the circulation desk.</div>
+            </div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="navigateTo('page-mybooks')">View Due Books</button>
+        </div>
+      </div>
+
+      <!-- PAGE: HOME / DASHBOARD -->
+      <section class="page active" id="page-home">
+        <!-- Student Profile Card Banner -->
+        <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,#0B2545 0%,#133E87 100%);border:none;box-shadow:0 8px 24px rgba(11,37,69,0.2)">
+          <div class="card-full" style="color:white;padding:24px">
+            <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+              <div style="width:72px;height:72px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;border:2px solid rgba(255,255,255,0.25)">👨‍🎓</div>
+              <div>
+                <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px" id="heroName">—</div>
+                <div style="font-size:14px;opacity:0.85;margin-top:2px" id="heroRoll">—</div>
+                <div style="font-size:13px;opacity:0.75;margin-top:4px" id="heroDept">—</div>
+              </div>
+              <div style="margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                <span style="background:rgba(5,150,105,0.35);color:#A7F3D0;padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:700;border:1px solid rgba(167,243,208,0.4)" id="heroStatus">🟢 Active Member</span>
+                <button class="btn btn-outline btn-sm" onclick="showDigitalCard()" style="color:white;border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);font-size:12px">
+                  🪪 View Digital Card
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Borrowing Quota Bar -->
+        <div class="quota-container">
+          <div class="quota-header">
+            <span style="font-weight:700;color:#0B2545;font-size:13.5px">📚 University Borrowing Quota</span>
+            <span id="quotaText" style="font-weight:700;color:#1D4ED8;font-size:13px">0 of 3 Books Active</span>
+          </div>
+          <div class="quota-bar-track">
+            <div class="quota-bar-fill" id="quotaBarFill" style="width: 0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:#64748B">
+            <span id="quotaAvailableNotice">3 more books can be borrowed</span>
+            <span>Policy: Max 3 books · 14-day loan · ₹5/day overdue fine</span>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-icon orange">📤</div>
+            <div class="stat-info">
+              <div class="label">Currently Issued</div>
+              <div class="value" id="myIssuedCount">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">⚠️</div>
+            <div class="stat-info">
+              <div class="label">Overdue Books</div>
+              <div class="value" id="myOverdueCount">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon navy">📋</div>
+            <div class="stat-info">
+              <div class="label">Lifetime Borrowed</div>
+              <div class="value" id="myTotalCount">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+              <div class="label">Total Fines</div>
+              <div class="value" id="myFineTotal" style="font-size:22px">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Currently Issued Books Table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📤 Books Currently in Your Possession</span>
+            <button class="btn btn-outline btn-sm" onclick="loadHomeData()">↻ Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Book Title</th>
+                    <th>Author</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Fine (if overdue)</th>
+                    <th>Shelf Rack</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="currentIssuedBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: MY BOOKS -->
+      <section class="page" id="page-mybooks">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">My Currently Active Book Loans</span>
+            <button class="btn btn-outline btn-sm" onclick="loadMyBooks()">↻ Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Book Title</th>
+                    <th>Author</th>
+                    <th>ISBN</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Days Remaining</th>
+                    <th>Fine Status</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="myBooksBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: BORROWING HISTORY -->
+      <section class="page" id="page-history">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Complete Borrowing & Return History</span>
+            <button class="btn btn-outline btn-sm" onclick="loadHistory()">↻ Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Book Title</th>
+                    <th>Author</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Return Date</th>
+                    <th>Fine Charged</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: SEARCH BOOKS -->
+      <section class="page" id="page-search">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-full">
+            <div style="max-width:620px;margin:0 auto;text-align:center;padding:24px 0">
+              <div style="font-size:42px;margin-bottom:12px">🔍</div>
+              <h2 style="color:#0B2545;margin-bottom:6px">Library Live Catalog Search</h2>
+              <p style="color:#64748B;margin-bottom:22px;font-size:13.5px">Check whether your required textbook or reference is currently available in the SPSU Central Library</p>
+              <div style="display:flex;gap:10px">
+                <div class="search-input-wrap" style="flex:1">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" id="stdSearchInput" placeholder="Enter book title, author, subject, or ISBN…" style="padding-left:40px" onkeydown="if(event.key==='Enter') searchBooks()">
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="searchBooks()">Search Availability</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="searchResultsDiv" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Search Results</span>
+              <span id="searchResultCount" style="font-size:13px;color:#64748B"></span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ISBN</th>
+                      <th>Title</th>
+                      <th>Author</th>
+                      <th>Category</th>
+                      <th>Shelf Location</th>
+                      <th>Availability</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="searchResultsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: BOOK CATALOG -->
+      <section class="page" id="page-catalog">
+        <div class="toolbar">
+          <div class="search-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="catalogSearch" placeholder="Search title, author, ISBN…" oninput="debounceCatalog()">
+            </div>
+            <select class="filter-select" id="catalogCatFilter" onchange="loadCatalog()">
+              <option value="">All Categories</option>
+            </select>
+            <select class="filter-select" id="catalogAvailFilter" onchange="loadCatalog()">
+              <option value="">All Books</option>
+              <option value="true">Available Now (In Stock)</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ISBN</th>
+                    <th>Title & Author</th>
+                    <th>Category</th>
+                    <th>Publisher</th>
+                    <th>Year</th>
+                    <th>Shelf Location</th>
+                    <th>Availability</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="catalogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: PROFILE -->
+      <section class="page" id="page-profile">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Student Profile & Library Membership</span>
+              <button class="btn btn-primary btn-sm" onclick="showDigitalCard()">🪪 View Card</button>
+            </div>
+            <div class="card-body">
+              <div style="text-align:center;padding:16px 0 24px">
+                <div style="width:84px;height:84px;background:#EFF6FF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;margin:0 auto 14px;border:2px solid #DBEAFE">👨‍🎓</div>
+                <div style="font-size:20px;font-weight:700;color:#0B2545" id="profileName">—</div>
+                <div style="font-size:13px;color:#64748B;font-weight:600" id="profileRoll">—</div>
+              </div>
+              <div style="display:grid;gap:12px">
+                <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E2E8F0;font-size:13px">
+                  <span style="color:#64748B">Email Address</span><span style="font-weight:600" id="profileEmail">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E2E8F0;font-size:13px">
+                  <span style="color:#64748B">Contact Phone</span><span style="font-weight:600" id="profilePhone">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E2E8F0;font-size:13px">
+                  <span style="color:#64748B">Department</span><span style="font-weight:600" id="profileDept">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E2E8F0;font-size:13px">
+                  <span style="color:#64748B">Semester</span><span style="font-weight:600" id="profileSem">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:13px">
+                  <span style="color:#64748B">Account Status</span><span id="profileStatus">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title">Change Password</span></div>
+            <div class="card-body">
+              <form id="stdChangePwForm" onsubmit="submitChangePw(event)">
+                <div class="form-group">
+                  <label>Current Password</label>
+                  <input type="password" id="stdCurrentPw" placeholder="Enter current password" required>
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="stdNewPw" placeholder="Min 6 characters" required>
+                </div>
+                <div class="form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="stdConfirmPw" placeholder="Re-enter new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">🔑 Update Password</button>
+              </form>
+
+              <hr style="border:none;border-top:1px solid #E2E8F0;margin:20px 0">
+              <div style="padding:16px;background:#EFF6FF;border-radius:10px;border:1px solid #BFDBFE">
+                <div style="font-size:13.5px;font-weight:700;color:#0B2545;margin-bottom:8px">📋 SPSU Central Library Rules</div>
+                <div style="font-size:12.5px;color:#1E3A8A;line-height:1.8">
+                  • <strong>Borrowing Quota:</strong> Maximum 3 books at a time per student.<br>
+                  • <strong>Loan Period:</strong> 14 calendar days from date of issue.<br>
+                  • <strong>Late Return Fine:</strong> ₹5.00 per day per book overdue.<br>
+                  • <strong>Issue / Return:</strong> Present your University ID or Roll Number at the circulation desk.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════ MODAL: DIGITAL UNIVERSITY LIBRARY CARD ═══════════════ -->
+<div class="modal-overlay" id="modalDigitalCard" onclick="closeModalOnBg(event, 'modalDigitalCard')">
+  <div class="modal-card" style="max-width:540px;background:#F8FAFC;padding:24px;border-radius:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:16px;color:#0B2545">🎓 SPSU Official Digital Library Card</div>
+      <button class="modal-close" onclick="closeModal('modalDigitalCard')">✕</button>
+    </div>
+    
+    <div class="library-card-wrapper" id="printableCard">
+      <div class="digital-library-card">
+        <div class="card-top">
+          <div>
+            <div class="card-univ">Sir Padampat Singhania University</div>
+            <div class="card-univ-sub">Central Library · Udaipur, Rajasthan</div>
+          </div>
+          <div class="card-chip"></div>
+        </div>
+        <div class="card-body-flex">
+          <div class="card-avatar" id="cardAvatarIcon">👨‍🎓</div>
+          <div class="card-details">
+            <div class="card-name" id="cardName">—</div>
+            <div class="card-roll" id="cardRoll">—</div>
+            <div class="card-dept" id="cardDept">—</div>
+            <div style="font-size:11px;opacity:0.85;margin-top:2px" id="cardSem">Semester: —</div>
+          </div>
+        </div>
+        <div class="card-footer-flex">
+          <div>
+            <div class="barcode-simulation" id="cardBarcode">||| | |||| | ||||| |||</div>
+            <div style="font-size:10px;opacity:0.85;font-family:monospace;margin-top:2px" id="cardMemberId">ID: SPSU-LIB-0000</div>
+          </div>
+          <div class="card-valid">
+            <div>ACADEMIC YEAR</div>
+            <div style="font-weight:700">2026 – 2027</div>
+            <div style="color:#A7F3D0;font-weight:700;margin-top:2px">● ACTIVE MEMBER</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeModal('modalDigitalCard')">Close</button>
+      <button class="btn btn-primary" onclick="printLibraryCard()">🖨️ Print Library Card</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL: BOOK DETAILS ═══════════════ -->
+<div class="modal-overlay" id="modalBookDetail" onclick="closeModalOnBg(event, 'modalBookDetail')">
+  <div class="modal-card" style="max-width:580px;padding:24px;border-radius:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid #E2E8F0;padding-bottom:12px">
+      <div style="font-weight:700;font-size:16px;color:#0B2545">📖 Book Information & Physical Location</div>
+      <button class="modal-close" onclick="closeModal('modalBookDetail')">✕</button>
+    </div>
+    <div id="modalBookContent">
+      <!-- Injected dynamically -->
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;border-top:1px solid #E2E8F0;padding-top:14px">
+      <button class="btn btn-primary" onclick="closeModal('modalBookDetail')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/utils.js"></script>
+<script>
+let currentUser = null;
+let currentStudentId = null;
+let studentProfile = null;
+let catalogTimer;
+window._booksMap = {};
+
+function debounceCatalog() {
+  clearTimeout(catalogTimer);
+  catalogTimer = setTimeout(loadCatalog, 350);
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN', {
+    weekday: 'short', day: '2-digit', month: 'long', year: 'numeric'
+  });
+
+  currentUser = await guardAuth('student');
+  if (!currentUser) return;
+
+  document.getElementById('sidebarName').textContent = currentUser.fullName;
+
+  // Handle Admin Preview Mode
+  if (currentUser.role === 'admin') {
+    const adminLink = document.getElementById('adminSwitchLink');
+    if (adminLink) adminLink.style.display = 'block';
+
+    const previewBanner = document.getElementById('adminPreviewBanner');
+    if (previewBanner) previewBanner.style.display = 'flex';
+
+    await loadStudentOptionsForAdmin();
+  }
+
+  // Load student profile & initial data
+  await loadStudentProfile(currentStudentId);
+  await loadHomeData(currentStudentId);
+  await loadCatalogCategories();
+});
+
+// Load student dropdown for admin preview
+async function loadStudentOptionsForAdmin() {
+  try {
+    const r = await API.get('/api/students');
+    if (r.success && r.data) {
+      const sel = document.getElementById('previewStudentSelect');
+      sel.innerHTML = r.data.map(s => `
+        <option value="${s.id}">
+          ${esc(s.full_name)} (${esc(s.roll_number)}) — ${esc(s.department)} ${s.active_loans > 0 ? '· ' + s.active_loans + ' active' : ''}
+        </option>
+      `).join('');
+      if (r.data.length > 0 && !currentStudentId) {
+        currentStudentId = r.data[0].id;
+      }
+    }
+  } catch (err) {
+    console.error('Error loading students for switcher:', err);
+  }
+}
+
+async function onStudentSwitcherChange(studentId) {
+  currentStudentId = studentId;
+  await loadStudentProfile(studentId);
+  await loadHomeData(studentId);
+  // Also refresh whatever page is active
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    if (activePage.id === 'page-mybooks') loadMyBooks(studentId);
+    if (activePage.id === 'page-history') loadHistory(studentId);
+  }
+}
+
+async function loadStudentProfile(studentId) {
+  try {
+    const url = studentId ? `/api/students/profile/me?studentId=${studentId}` : '/api/students/profile/me';
+    const r = await API.get(url);
+    if (!r.success) {
+      console.warn('Student profile fetch error:', r.message);
+      return;
+    }
+    const me = r.data;
+    studentProfile = me;
+
+    document.getElementById('sidebarRoll').textContent = me.roll_number || 'Student Portal';
+    document.getElementById('heroName').textContent = me.full_name || currentUser.fullName;
+    document.getElementById('heroRoll').textContent = `Roll No: ${me.roll_number || '—'}`;
+    document.getElementById('heroDept').textContent = `${me.department || 'General'} · Semester ${me.semester || 1}`;
+    document.getElementById('heroStatus').innerHTML = `🟢 ${(me.status || 'active').charAt(0).toUpperCase() + (me.status || 'active').slice(1)} Member`;
+
+    document.getElementById('profileName').textContent = me.full_name || currentUser.fullName;
+    document.getElementById('profileRoll').textContent = `Roll Number: ${me.roll_number || '—'}`;
+    document.getElementById('profileEmail').textContent = me.email || currentUser.email;
+    document.getElementById('profilePhone').textContent = me.phone || '—';
+    document.getElementById('profileDept').textContent = me.department || '—';
+    document.getElementById('profileSem').textContent = `Semester ${me.semester || 1}`;
+    document.getElementById('profileStatus').innerHTML = studentStatusBadge(me.status || 'active');
+
+    // Update Digital Card data
+    document.getElementById('cardName').textContent = me.full_name || currentUser.fullName;
+    document.getElementById('cardRoll').textContent = `ROLL NO: ${me.roll_number || '—'}`;
+    document.getElementById('cardDept').textContent = me.department || '—';
+    document.getElementById('cardSem').textContent = `Semester ${me.semester || 1} · B.Tech`;
+    document.getElementById('cardMemberId').textContent = `ID: SPSU-LIB-${me.roll_number || me.id || '0000'}`;
+    document.getElementById('cardBarcode').textContent = `*${me.roll_number || 'SPSU'}*`;
+  } catch (err) {
+    console.error('Error in loadStudentProfile:', err);
+  }
+}
+
+async function loadHomeData(studentId) {
+  try {
+    const sid = studentId || currentStudentId;
+    const url = sid ? `/api/students/profile/history?studentId=${sid}` : '/api/students/profile/history';
+    const r = await API.get(url);
+    const all = r.data || [];
+    const active = all.filter(h => !h.return_date);
+    const today = new Date().toISOString().split('T')[0];
+    const overdue = active.filter(h => h.due_date < today);
+    const totalFine = all.reduce((s, h) => s + parseFloat(h.fine_amount || 0), 0);
+
+    // Update stats
+    document.getElementById('myIssuedCount').textContent = active.length;
+    document.getElementById('myOverdueCount').textContent = overdue.length;
+    document.getElementById('myTotalCount').textContent = all.length;
+    document.getElementById('myFineTotal').textContent = `₹${totalFine.toFixed(0)}`;
+
+    // Update Quota Bar (Max 3 books)
+    const quotaUsed = active.length;
+    const quotaMax = 3;
+    const pct = Math.min(100, Math.round((quotaUsed / quotaMax) * 100));
+    const fillEl = document.getElementById('quotaBarFill');
+    fillEl.style.width = `${pct}%`;
+    fillEl.className = 'quota-bar-fill';
+    if (quotaUsed >= 3) {
+      fillEl.classList.add('danger');
+    } else if (quotaUsed >= 2) {
+      fillEl.classList.add('warning');
+    }
+
+    document.getElementById('quotaText').textContent = `${quotaUsed} of ${quotaMax} Books Borrowed`;
+    const availLeft = Math.max(0, quotaMax - quotaUsed);
+    document.getElementById('quotaAvailableNotice').textContent = availLeft > 0
+      ? `✅ ${availLeft} more book${availLeft > 1 ? 's' : ''} can be borrowed`
+      : `⚠️ Quota full (3/3 books issued). Return a book to borrow another.`;
+
+    // Overdue Fine Banner
+    const fineBanner = document.getElementById('fineNoticeBanner');
+    if (overdue.length > 0 || totalFine > 0) {
+      fineBanner.style.display = 'block';
+      let fineMsg = '';
+      if (overdue.length > 0) {
+        fineMsg = `You have ${overdue.length} overdue book(s) past the 14-day limit. Late fine accrues at ₹5.00/day. Please return immediately.`;
+      } else {
+        fineMsg = `You have ₹${totalFine.toFixed(2)} in recorded fine fees on previous loans.`;
+      }
+      document.getElementById('fineNoticeText').textContent = fineMsg;
+    } else {
+      fineBanner.style.display = 'none';
+    }
+
+    // Populate Currently Issued Table
+    const tbody = document.getElementById('currentIssuedBody');
+    if (!active.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-table"><div class="empty-icon">✅</div>No books currently issued to you. Explore the catalog to borrow books.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = active.map(h => {
+      const isOverdue = h.due_date < today;
+      const daysOver = isOverdue ? Math.floor((new Date(today) - new Date(h.due_date)) / 86400000) : 0;
+      return `<tr>
+        <td style="font-weight:600;color:#0B2545">${esc(h.book_title)}</td>
+        <td style="font-size:12.5px;color:#64748B">${esc(h.author)}</td>
+        <td>${formatDate(h.issue_date)}</td>
+        <td style="color:${isOverdue ? '#DC2626' : '#334155'};font-weight:${isOverdue ? 700 : 400}">${formatDate(h.due_date)}</td>
+        <td style="color:#DC2626;font-weight:700">${isOverdue ? '₹' + (daysOver * 5).toFixed(2) : '—'}</td>
+        <td><span style="font-size:11.5px;background:#F1F5F9;padding:2px 7px;border-radius:4px;font-weight:600">${esc(h.shelf_location || 'Central Shelf')}</span></td>
+        <td>${issueBadge(isOverdue ? 'OVERDUE' : 'ISSUED')}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error in loadHomeData:', err);
+  }
+}
+
+async function loadMyBooks(studentId) {
+  try {
+    const sid = studentId || currentStudentId;
+    const url = sid ? `/api/students/profile/history?studentId=${sid}` : '/api/students/profile/history';
+    const r = await API.get(url);
+    const all = r.data || [];
+    const active = all.filter(h => !h.return_date);
+    const today = new Date().toISOString().split('T')[0];
+    const tbody = document.getElementById('myBooksBody');
+    if (!active.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-table"><div class="empty-icon">📚</div>No books currently issued to you. Contact the librarian at the issue desk to borrow a book.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = active.map(h => {
+      const isOverdue = h.due_date < today;
+      const daysLeft = daysFromNow(h.due_date);
+      let daysLabel, daysColor;
+      if (isOverdue) {
+        daysLabel = `${Math.abs(daysLeft)}d overdue ⚠️`;
+        daysColor = '#DC2626';
+      } else if (daysLeft <= 2) {
+        daysLabel = `${daysLeft}d remaining ⏳`;
+        daysColor = '#D97706';
+      } else {
+        daysLabel = `${daysLeft} days left`;
+        daysColor = '#059669';
+      }
+
+      const fineAmount = isOverdue ? '₹' + (Math.abs(daysLeft) * 5).toFixed(2) : '₹0.00';
+
+      return `<tr>
+        <td style="font-weight:600;color:#0B2545">${esc(h.book_title)}</td>
+        <td style="font-size:12.5px;color:#64748B">${esc(h.author)}</td>
+        <td><code style="font-size:11.5px;background:#F1F5F9;padding:2px 6px;border-radius:4px">${esc(h.isbn)}</code></td>
+        <td>${formatDate(h.issue_date)}</td>
+        <td style="color:${isOverdue ? '#DC2626' : '#334155'};font-weight:${isOverdue ? 700 : 400}">${formatDate(h.due_date)}</td>
+        <td style="font-weight:700;color:${daysColor}">${daysLabel}</td>
+        <td style="color:${isOverdue ? '#DC2626' : '#059669'};font-weight:600">${fineAmount}</td>
+        <td>${issueBadge(isOverdue ? 'OVERDUE' : 'ISSUED')}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error in loadMyBooks:', err);
+  }
+}
+
+async function loadHistory(studentId) {
+  try {
+    const sid = studentId || currentStudentId;
+    const url = sid ? `/api/students/profile/history?studentId=${sid}` : '/api/students/profile/history';
+    const r = await API.get(url);
+    const all = r.data || [];
+    const tbody = document.getElementById('historyBody');
+    if (!all.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-table"><div class="empty-icon">📋</div>No borrowing history found.</td></tr>';
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    tbody.innerHTML = all.map(h => {
+      const isOverdue = !h.return_date && h.due_date < today;
+      return `<tr>
+        <td style="font-weight:600;color:#0B2545">${esc(h.book_title)}</td>
+        <td style="font-size:12px;color:#64748B">${esc(h.author)}</td>
+        <td>${formatDate(h.issue_date)}</td>
+        <td style="color:${isOverdue || h.status === 'OVERDUE' ? '#DC2626' : '#334155'}">${formatDate(h.due_date)}</td>
+        <td>${h.return_date ? formatDate(h.return_date) : '<span style="color:#D97706;font-weight:600">Active Loan</span>'}</td>
+        <td style="color:${h.fine_amount > 0 ? '#DC2626' : '#059669'};font-weight:600">${h.fine_amount > 0 ? '₹' + parseFloat(h.fine_amount).toFixed(2) : '—'}</td>
+        <td>${issueBadge(isOverdue ? 'OVERDUE' : h.status)}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error in loadHistory:', err);
+  }
+}
+
+async function searchBooks() {
+  const q = document.getElementById('stdSearchInput').value.trim();
+  if (!q) return ToastManager.warning('Please enter a book title, author, or ISBN.');
+  const r = await API.get(`/api/books/availability?q=${encodeURIComponent(q)}`);
+  const books = r.data || [];
+  document.getElementById('searchResultsDiv').style.display = 'block';
+  document.getElementById('searchResultCount').textContent = `${books.length} book(s) found`;
+  const tbody = document.getElementById('searchResultsBody');
+  if (!books.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-table"><div class="empty-icon">🔍</div>No books matched your search. Try different keywords.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = books.map(b => {
+    window._booksMap[b.id] = b;
+    return `<tr>
+      <td><code style="font-size:11.5px;background:#F1F5F9;padding:2px 6px;border-radius:4px">${esc(b.isbn)}</code></td>
+      <td style="font-weight:600;color:#0B2545">${esc(b.title)}</td>
+      <td style="font-size:12.5px">${esc(b.author)}</td>
+      <td><span class="badge badge-navy">${esc(b.category_name)}</span></td>
+      <td style="font-size:12px;color:#64748B">${esc(b.shelf_location) || 'Rack B-1'}</td>
+      <td>${availabilityBadge(b.available_copies, b.total_copies)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewBookDetails(${b.id})">🔍 Details</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadCatalogCategories() {
+  const r = await API.get('/api/books/categories');
+  const cats = r.data || [];
+  const sel = document.getElementById('catalogCatFilter');
+  sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+}
+
+async function loadCatalog() {
+  const search = document.getElementById('catalogSearch').value;
+  const category = document.getElementById('catalogCatFilter').value;
+  const available = document.getElementById('catalogAvailFilter').value;
+  const r = await API.get(`/api/books?search=${encodeURIComponent(search)}&category=${category}&available=${available}`);
+  const books = r.data || [];
+  const tbody = document.getElementById('catalogBody');
+  if (!books.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-table"><div class="empty-icon">📚</div>No books found in this category.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = books.map(b => {
+    window._booksMap[b.id] = b;
+    return `<tr>
+      <td><code style="font-size:11px;background:#F1F5F9;padding:2px 5px;border-radius:4px">${esc(b.isbn)}</code></td>
+      <td><div style="font-weight:600;font-size:13.5px;color:#0B2545">${esc(b.title)}</div><div style="font-size:11.5px;color:#64748B">${esc(b.author)}</div></td>
+      <td><span class="badge badge-navy">${esc(b.category_name)}</span></td>
+      <td style="font-size:12.5px">${esc(b.publisher) || '—'}</td>
+      <td style="font-size:12.5px">${b.edition_year || '—'}</td>
+      <td style="font-size:12px;color:#64748B">${esc(b.shelf_location) || 'Central Shelf'}</td>
+      <td>${availabilityBadge(b.available_copies, b.total_copies)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewBookDetails(${b.id})">🔍 Details</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function viewBookDetails(bookId) {
+  const b = window._booksMap[bookId];
+  if (!b) return ToastManager.error('Book details not found.');
+  const isAvailable = b.available_copies > 0;
+  const content = `
+    <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:18px">
+      <div style="width:70px;height:95px;background:linear-gradient(135deg,#0B2545,#1D4ED8);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:36px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.15);flex-shrink:0">
+        📚
+      </div>
+      <div>
+        <h3 style="font-size:18px;color:#0B2545;margin-bottom:4px;line-height:1.3">${esc(b.title)}</h3>
+        <p style="font-size:13.5px;color:#64748B;margin-bottom:8px">By <strong>${esc(b.author)}</strong></p>
+        <div>${availabilityBadge(b.available_copies, b.total_copies)}</div>
+      </div>
+    </div>
+
+    <div style="background:#F8FAFC;border-radius:10px;padding:14px;border:1px solid #E2E8F0;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;margin-bottom:16px">
+      <div><span style="color:#64748B;display:block;font-size:11.5px">ISBN Number</span><code style="font-weight:700">${esc(b.isbn)}</code></div>
+      <div><span style="color:#64748B;display:block;font-size:11.5px">Category</span><strong>${esc(b.category_name || 'General')}</strong></div>
+      <div><span style="color:#64748B;display:block;font-size:11.5px">Publisher</span>${esc(b.publisher || 'Academic Press')}</div>
+      <div><span style="color:#64748B;display:block;font-size:11.5px">Edition Year</span>${b.edition_year || '—'}</div>
+      <div><span style="color:#64748B;display:block;font-size:11.5px">Total Copies</span><strong>${b.total_copies}</strong></div>
+      <div><span style="color:#64748B;display:block;font-size:11.5px">Shelf Location</span><strong style="color:#1D4ED8">📍 ${esc(b.shelf_location || 'Rack B-1')}</strong></div>
+    </div>
+
+    <div style="padding:12px;border-radius:8px;background:${isAvailable ? '#ECFDF5' : '#FEF2F2'};border:1px solid ${isAvailable ? '#A7F3D0' : '#FECACA'};font-size:12.5px;color:${isAvailable ? '#065F46' : '#991B1B'}">
+      ${isAvailable
+        ? '✅ <strong>Available for Borrowing:</strong> Present your University Roll Number at the Central Library Circulation Counter to borrow this book.'
+        : '⚠️ <strong>Currently Fully Issued:</strong> All copies are currently issued to students. Check back soon or request a reservation from the librarian.'}
+    </div>
+  `;
+  document.getElementById('modalBookContent').innerHTML = content;
+  openModal('modalBookDetail');
+}
+
+function showDigitalCard() {
+  openModal('modalDigitalCard');
+}
+
+function printLibraryCard() {
+  const cardHTML = document.getElementById('printableCard').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>SPSU Digital Library Card - Print</title>
+      <style>
+        body { font-family: Segoe UI, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 90vh; background: #F8FAFC; margin: 0; }
+        .card-container { width: 460px; padding: 20px; }
+        .digital-library-card {
+          background: linear-gradient(135deg, #0B2545 0%, #133E87 50%, #1D4ED8 100%);
+          color: white; border-radius: 18px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+          position: relative; overflow: hidden;
+        }
+        .card-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 12px; margin-bottom: 14px; }
+        .card-univ { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .card-univ-sub { font-size: 10px; opacity: 0.8; }
+        .card-chip { width: 34px; height: 24px; background: linear-gradient(135deg, #FCD34D, #F59E0B); border-radius: 5px; }
+        .card-body-flex { display: flex; gap: 16px; align-items: center; }
+        .card-avatar { width: 60px; height: 60px; border-radius: 12px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; border: 1.5px solid rgba(255,255,255,0.3); }
+        .card-details { flex: 1; }
+        .card-name { font-size: 18px; font-weight: 800; }
+        .card-roll { font-size: 13px; color: #93C5FD; font-weight: 700; margin-top: 2px; }
+        .card-dept { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+        .card-footer-flex { margin-top: 18px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; }
+        .barcode-simulation { font-family: 'Courier New', monospace; font-size: 18px; letter-spacing: 4px; font-weight: bold; }
+        .card-valid { font-size: 10px; opacity: 0.85; text-align: right; }
+      </style>
+    </head>
+    <body onload="window.print()">
+      <div class="card-container">
+        ${cardHTML}
+      </div>
+    </body>
+    </html>
+  `);
+  win.document.close();
+}
+
+async function submitChangePw(e) {
+  e.preventDefault();
+  const currentPw = document.getElementById('stdCurrentPw').value;
+  const newPw = document.getElementById('stdNewPw').value;
+  const confirmPw = document.getElementById('stdConfirmPw').value;
+  if (newPw !== confirmPw) return ToastManager.error('New passwords do not match.');
+  if (newPw.length < 6) return ToastManager.warning('Password must be at least 6 characters.');
+  const r = await API.post('/api/auth/change-password', { currentPassword: currentPw, newPassword: newPw });
+  if (r.success) {
+    ToastManager.success('Password updated successfully!');
+    document.getElementById('stdChangePwForm').reset();
+  } else {
+    ToastManager.error(r.message);
+  }
+}
+
+window.onPageNavigated = function(pageId) {
+  const sid = currentStudentId;
+  if (pageId === 'page-home') loadHomeData(sid);
+  if (pageId === 'page-mybooks') loadMyBooks(sid);
+  if (pageId === 'page-history') loadHistory(sid);
+  if (pageId === 'page-catalog') loadCatalog();
+  if (pageId === 'page-profile') loadStudentProfile(sid);
+};
+</script>
+</body>
+</html>
